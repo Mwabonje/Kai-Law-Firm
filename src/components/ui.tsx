@@ -75,11 +75,11 @@ export const Pagination = ({ total, label }: { total: number, label: string }) =
   )
 }
 
-export const Modal = ({ isOpen, onClose, title, children, footer }: { isOpen: boolean, onClose: () => void, title: string, children: React.ReactNode, footer: React.ReactNode }) => {
+export const Modal = ({ isOpen, onClose, title, children, footer, maxWidth = "max-w-[520px]" }: { isOpen: boolean, onClose: () => void, title: string, children: React.ReactNode, footer: React.ReactNode, maxWidth?: string }) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-[2px] z-[100] flex items-start justify-center py-[60px] px-5 overflow-y-auto animate-in fade-in duration-200" onClick={onClose}>
-      <div className="bg-surface rounded-xl w-full max-w-[520px] shadow-xl border border-border-main animate-in slide-in-from-bottom-2 duration-200" onClick={e => e.stopPropagation()}>
+      <div className={`bg-surface rounded-xl w-full ${maxWidth} shadow-xl border border-border-main animate-in slide-in-from-bottom-2 duration-200`} onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-[18px] px-[22px] border-b border-border-sub">
           <h3 className="text-[15.5px] font-semibold text-ink">{title}</h3>
           <button className="bg-transparent border-none text-text-mute w-7 h-7 rounded-md flex items-center justify-center hover:bg-ink-2 hover:text-text-main" onClick={onClose}>

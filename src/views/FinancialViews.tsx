@@ -9,6 +9,25 @@ import autoTable from 'jspdf-autotable';
 export function InvoicesView() {
   const [selectedInvoice, setSelectedInvoice] = React.useState<typeof invoices[0] | null>(null);
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
+  const [lineItems, setLineItems] = React.useState([
+    { id: 1, desc: '', sub: '', qty: 1, rate: 0 }
+  ]);
+
+  const addLineItem = () => {
+    setLineItems([...lineItems, { id: Date.now(), desc: '', sub: '', qty: 1, rate: 0 }]);
+  };
+
+  const removeLineItem = (id: number) => {
+    setLineItems(lineItems.filter(item => item.id !== id));
+  };
+
+  const updateLineItem = (id: number, field: string, value: any) => {
+    setLineItems(lineItems.map(item => item.id === id ? { ...item, [field]: value } : item));
+  };
+
+  const subtotal = lineItems.reduce((acc, item) => acc + (item.qty * item.rate), 0);
+  const vat = subtotal * 0.16;
+  const total = subtotal + vat;
 
   const overdueInvoices = invoices.filter(i => i.status === 'Overdue');
   const pendingInvoices = invoices.filter(i => i.status === 'Pending');
@@ -198,6 +217,7 @@ export function InvoicesView() {
         isOpen={isCreateOpen} 
         onClose={() => setIsCreateOpen(false)}
         title="Create Invoice"
+        maxWidth="max-w-[720px]"
         footer={
           <>
             <Button variant="secondary" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
@@ -235,13 +255,76 @@ export function InvoicesView() {
               <input type="date" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" />
             </div>
           </div>
-          <div>
-            <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Total Amount (KES)</label>
-            <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="e.g. 185,000" />
+
+          <div className="mt-4 pt-4 border-t border-border-sub">
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-[12.5px] font-bold text-ink uppercase tracking-wide">Line Items</label>
+            </div>
+            
+            <div className="hidden sm:grid grid-cols-[1fr_60px_100px_100px_30px] gap-3 mb-2 text-[10px] font-bold text-text-mute uppercase tracking-wider">
+              <div>Description</div>
+              <div className="text-right">Qty</div>
+              <div className="text-right">Rate</div>
+              <div className="text-right">Amount</div>
+              <div></div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {lineItems.map((item, index) => (
+                <div key={item.id} className="flex flex-col sm:grid sm:grid-cols-[1fr_60px_100px_100px_30px] gap-3 items-start sm:items-center bg-surface border border-border-main sm:border-none p-3 sm:p-0 rounded-md sm:rounded-none">
+                  <div className="w-full flex flex-col gap-2">
+                    <input type="text" value={item.desc} onChange={(e) => updateLineItem(item.id, 'desc', e.target.value)} className="w-full border border-border-main rounded-md px-3 py-2 text-[13px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft placeholder:text-text-mute" placeholder="Item description" />
+                    <input type="text" value={item.sub} onChange={(e) => updateLineItem(item.id, 'sub', e.target.value)} className="w-full border border-border-main rounded-md px-3 py-1.5 text-[12px] text-text-soft bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft placeholder:text-text-mute" placeholder="Additional details (optional)" />
+                  </div>
+                  
+                  <div className="w-full sm:w-auto flex items-center gap-2 sm:block">
+                    <span className="sm:hidden text-[11px] font-bold text-text-mute uppercase tracking-wider w-12">Qty</span>
+                    <input type="number" min="1" value={item.qty} onChange={(e) => updateLineItem(item.id, 'qty', parseInt(e.target.value) || 0)} className="w-full border border-border-main rounded-md px-2 py-2 text-[13px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft text-right" />
+                  </div>
+
+                  <div className="w-full sm:w-auto flex items-center gap-2 sm:block">
+                    <span className="sm:hidden text-[11px] font-bold text-text-mute uppercase tracking-wider w-12">Rate</span>
+                    <input type="number" min="0" value={item.rate || ''} onChange={(e) => updateLineItem(item.id, 'rate', parseInt(e.target.value) || 0)} className="w-full border border-border-main rounded-md px-2 py-2 text-[13px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft text-right" placeholder="0" />
+                  </div>
+
+                  <div className="w-full sm:w-auto flex items-center gap-2 sm:block">
+                    <span className="sm:hidden text-[11px] font-bold text-text-mute uppercase tracking-wider w-12">Amt</span>
+                    <div className="w-full text-right text-[13.5px] text-text-main font-semibold py-2">
+                      {(item.qty * item.rate).toLocaleString()}
+                    </div>
+                  </div>
+
+                  <div className="w-full sm:w-auto flex justify-end">
+                    <button onClick={() => removeLineItem(item.id)} className="w-7 h-7 rounded bg-transparent border-none text-text-soft hover:bg-danger-bg hover:text-danger flex items-center justify-center outline-none">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-3">
+              <Button variant="ghost" size="sm" onClick={addLineItem} className="text-accent hover:text-accent-hover hover:bg-accent-soft">
+                <Plus className="w-3.5 h-3.5" /> Add Line Item
+              </Button>
+            </div>
           </div>
-          <div>
-            <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Initial Line Item Notes</label>
-            <textarea className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft min-h-[64px] resize-y" placeholder="Brief description of services..."></textarea>
+
+          <div className="flex justify-end mt-4 pt-4 border-t border-border-sub">
+            <div className="w-full sm:w-[240px]">
+              <div className="flex justify-between py-1.5 text-[13px]">
+                <span className="text-text-soft">Subtotal</span>
+                <span className="font-semibold text-ink">{subtotal.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between py-1.5 text-[13px] border-b border-border-sub mb-2 pb-2">
+                <span className="text-text-soft">VAT (16%)</span>
+                <span className="font-semibold text-ink">{vat.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between py-1.5 text-[14.5px] font-bold">
+                <span className="text-ink">Total Due</span>
+                <span className="text-ink">KES {total.toLocaleString()}</span>
+              </div>
+            </div>
           </div>
         </div>
       </Modal>
