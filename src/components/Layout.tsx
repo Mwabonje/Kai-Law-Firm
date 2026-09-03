@@ -96,7 +96,7 @@ export function Layout({ children, activeView, setActiveView, viewTitle }: Layou
       {/* Main Content */}
       <div className="flex-1 min-w-0 flex flex-col md:ml-[260px]">
         {/* Topbar */}
-        <header className="h-[62px] bg-white/82 backdrop-blur-[8px] border-b border-border-main flex items-center justify-between px-[30px] sticky top-0 z-30">
+        <header className="h-[62px] bg-white/82 backdrop-blur-[8px] border-b border-border-main flex items-center justify-between px-4 md:px-[30px] sticky top-0 z-30">
           <div className="flex items-center gap-[10px] min-w-0">
             <button 
               className="md:hidden bg-transparent border-none text-text-main p-1.5 outline-none focus-visible:ring-2 focus-visible:ring-gold"

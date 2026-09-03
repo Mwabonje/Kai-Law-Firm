@@ -6,12 +6,33 @@ import { Plus, FileText, Briefcase, Users, Map, CheckSquare } from 'lucide-react
 export function DashboardView({ onNavigate }: { onNavigate: (view: string) => void }) {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
+  // Dynamic greeting and date in EAT (East Africa Time)
+  const now = new Date();
+  const eatDateFormatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Africa/Nairobi',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const dateString = eatDateFormatter.format(now);
+
+  const eatHourFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Africa/Nairobi',
+    hour: 'numeric',
+    hour12: false,
+  });
+  const hour = parseInt(eatHourFormatter.format(now), 10);
+  
+  let greeting = 'Good evening';
+  if (hour >= 5 && hour < 12) greeting = 'Good morning';
+  else if (hour >= 12 && hour < 18) greeting = 'Good afternoon';
+
   return (
     <div className="animate-in fade-in duration-300">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="font-serif text-[25px] font-bold text-ink tracking-[-0.02em]">Good morning, Amina</h1>
-          <p className="text-[13.5px] text-text-soft mt-1.5 max-w-[560px]">Here's what's happening across the practice today, 2 September 2026.</p>
+          <h1 className="font-serif text-[25px] font-bold text-ink tracking-[-0.02em]">{greeting}, Susan</h1>
+          <p className="text-[13.5px] text-text-soft mt-1.5 max-w-[560px]">Here's what's happening across the practice today, {dateString}.</p>
         </div>
         <div className="flex gap-2 shrink-0 w-full sm:w-auto">
           <Button variant="secondary" className="flex-1 sm:flex-none justify-center" onClick={() => {}}>
