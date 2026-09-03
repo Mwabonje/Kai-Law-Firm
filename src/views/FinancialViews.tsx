@@ -1,6 +1,6 @@
 import { InvoiceDetail } from "./InvoiceDetail";
 import React from 'react';
-import { Button, Badge, IconButton, Pagination, getInitials } from '../components/ui';
+import { Button, Badge, IconButton, Pagination, getInitials, Modal } from '../components/ui';
 import { invoices, payments } from '../data';
 import { Plus, Search, Eye, AlertCircle, Clock, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
@@ -8,6 +8,7 @@ import autoTable from 'jspdf-autotable';
 
 export function InvoicesView() {
   const [selectedInvoice, setSelectedInvoice] = React.useState<typeof invoices[0] | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = React.useState(false);
 
   const overdueInvoices = invoices.filter(i => i.status === 'Overdue');
   const pendingInvoices = invoices.filter(i => i.status === 'Pending');
@@ -105,7 +106,7 @@ export function InvoicesView() {
           <p className="text-[13.5px] text-text-soft mt-1.5 max-w-[560px]">Billing across all clients and matters.</p>
         </div>
         <div className="flex shrink-0 w-full sm:w-auto">
-          <Button variant="primary" className="flex-1 sm:flex-none justify-center">
+          <Button variant="primary" className="flex-1 sm:flex-none justify-center" onClick={() => setIsCreateOpen(true)}>
             <Plus className="w-[15px] h-[15px]" />
             Create Invoice
           </Button>
@@ -192,6 +193,58 @@ export function InvoicesView() {
         </div>
         <Pagination total={61} label="Showing 1–8 of 61" />
       </div>
+
+      <Modal 
+        isOpen={isCreateOpen} 
+        onClose={() => setIsCreateOpen(false)}
+        title="Create Invoice"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+            <Button variant="primary" onClick={() => setIsCreateOpen(false)}>Create Invoice</Button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Client</label>
+              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+                <option>Select Client...</option>
+                <option>Wanjiru Njoroge</option>
+                <option>Tembo Properties Ltd</option>
+                <option>Coastal Sands Ltd</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Matter</label>
+              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+                <option>Select Matter...</option>
+                <option>KAI-2026-0142</option>
+                <option>KAI-2026-0139</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Invoice Date</label>
+              <input type="date" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" />
+            </div>
+            <div>
+              <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Due Date</label>
+              <input type="date" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Total Amount (KES)</label>
+            <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="e.g. 185,000" />
+          </div>
+          <div>
+            <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Initial Line Item Notes</label>
+            <textarea className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft min-h-[64px] resize-y" placeholder="Brief description of services..."></textarea>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
