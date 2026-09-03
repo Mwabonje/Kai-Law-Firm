@@ -1,3 +1,4 @@
+import { InvoiceDetail } from "./InvoiceDetail";
 import React from 'react';
 import { Button, Badge, IconButton, Pagination, getInitials } from '../components/ui';
 import { invoices, payments } from '../data';
@@ -6,8 +7,20 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 export function InvoicesView() {
+  const [selectedInvoice, setSelectedInvoice] = React.useState<typeof invoices[0] | null>(null);
+
   const overdueInvoices = invoices.filter(i => i.status === 'Overdue');
   const pendingInvoices = invoices.filter(i => i.status === 'Pending');
+
+  if (selectedInvoice) {
+    return (
+      <InvoiceDetail 
+        invoice={selectedInvoice} 
+        onBack={() => setSelectedInvoice(null)} 
+        generatePDF={() => generateInvoicePDF(selectedInvoice)} 
+      />
+    );
+  }
 
   const generateInvoicePDF = (invoice: typeof invoices[0]) => {
     const doc = new jsPDF();
@@ -169,7 +182,7 @@ export function InvoicesView() {
                   <td>
                     <div className="flex gap-1 justify-end">
                       <IconButton title="Download PDF" onClick={() => generateInvoicePDF(i)}><Download className="w-[15px] h-[15px]" /></IconButton>
-                      <IconButton title="View"><Eye className="w-[15px] h-[15px]" /></IconButton>
+                      <IconButton title="View" onClick={() => setSelectedInvoice(i)}><Eye className="w-[15px] h-[15px]" /></IconButton>
                     </div>
                   </td>
                 </tr>
