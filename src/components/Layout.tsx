@@ -73,10 +73,10 @@ export function Layout({ children, activeView, setActiveView, viewTitle }: Layou
 
         <div className="border-t border-slate-800 p-4">
           <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-800/50">
-            <div className="w-9 h-9 rounded-full bg-slate-600 text-white flex items-center justify-center text-[12px] font-semibold shrink-0">AM</div>
+            <div className="w-9 h-9 rounded-full bg-slate-600 text-white flex items-center justify-center text-[12px] font-semibold shrink-0">SK</div>
             <div className="flex-1 min-w-0">
-              <div className="text-[13px] font-semibold text-white whitespace-nowrap overflow-hidden text-ellipsis">Amina Mwangi</div>
-              <div className="text-[11.5px] text-slate-400">Senior Partner</div>
+              <div className="text-[13px] font-semibold text-white whitespace-nowrap overflow-hidden text-ellipsis">Susan Kai</div>
+              <div className="text-[11.5px] text-slate-400">Owner</div>
             </div>
             <button className="text-slate-400 p-1 rounded hover:bg-slate-700 hover:text-white outline-none">
               <Settings className="w-4 h-4" />
@@ -123,7 +123,7 @@ export function Layout({ children, activeView, setActiveView, viewTitle }: Layou
             </button>
             
             <div className="flex items-center gap-2 px-1.5 py-1 pl-2.5 rounded-md hover:bg-paper cursor-pointer">
-              <div className="w-[30px] h-[30px] rounded-full bg-accent text-white flex items-center justify-center text-[11.5px] font-semibold">AM</div>
+              <div className="w-[30px] h-[30px] rounded-full bg-accent text-white flex items-center justify-center text-[11.5px] font-semibold">SK</div>
               <ChevronDown className="w-3.5 h-3.5 text-text-mute" />
             </div>
           </div>

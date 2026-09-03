@@ -1,11 +1,88 @@
 import React from 'react';
 import { Button, Badge, IconButton, Pagination, getInitials } from '../components/ui';
 import { invoices, payments } from '../data';
-import { Plus, Search, Eye, AlertCircle, Clock } from 'lucide-react';
+import { Plus, Search, Eye, AlertCircle, Clock, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export function InvoicesView() {
   const overdueInvoices = invoices.filter(i => i.status === 'Overdue');
   const pendingInvoices = invoices.filter(i => i.status === 'Pending');
+
+  const generateInvoicePDF = (invoice: typeof invoices[0]) => {
+    const doc = new jsPDF();
+    
+    // Firm Branding
+    doc.setFontSize(24);
+    doc.setTextColor(79, 70, 229); // indigo-600
+    doc.setFont('helvetica', 'bold');
+    doc.text('KAI', 14, 20);
+    
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139); // slate-500
+    doc.setFont('helvetica', 'normal');
+    doc.text('Advocates | Property & Land Law', 14, 27);
+    
+    doc.text('KAI Plaza, 4th Floor', 14, 34);
+    doc.text('Nairobi, Kenya', 14, 39);
+    doc.text('Email: billing@kaiadvocates.co.ke', 14, 44);
+    doc.text('Phone: +254 700 000 000', 14, 49);
+
+    // Invoice Details
+    doc.setFontSize(20);
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.setFont('helvetica', 'bold');
+    doc.text('INVOICE', 120, 20);
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Invoice No:`, 120, 28);
+    doc.setFont('helvetica', 'bold');
+    doc.text(invoice.no, 150, 28);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Date Issued:`, 120, 34);
+    doc.setFont('helvetica', 'bold');
+    doc.text(new Date().toLocaleDateString(), 150, 34);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Due Date:`, 120, 40);
+    doc.setFont('helvetica', 'bold');
+    doc.text(invoice.due, 150, 40);
+
+    // Client Details
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Billed To:', 14, 65);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(invoice.client, 14, 72);
+    doc.text(`Matter: ${invoice.matter}`, 14, 78);
+
+    // Table
+    autoTable(doc, {
+      startY: 90,
+      head: [['Description', 'Amount']],
+      body: [
+        [`Professional legal services rendered for matter ${invoice.matter}`, invoice.amount],
+        ['Disbursements and filling fees', 'Included'],
+      ],
+      foot: [['Total Due', invoice.amount]],
+      theme: 'grid',
+      headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold' },
+      footStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
+      styles: { fontSize: 10, cellPadding: 5 },
+      columnStyles: { 1: { halign: 'right' } }
+    });
+
+    // Footer
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text('Payment Terms: 14 Days from date of issue.', 14, (doc as any).lastAutoTable.finalY + 15);
+    doc.text('Thank you for your business.', 14, (doc as any).lastAutoTable.finalY + 20);
+
+    doc.save(`${invoice.no}_${invoice.client.replace(/\s+/g, '_')}.pdf`);
+  };
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -91,6 +168,7 @@ export function InvoicesView() {
                   <td><Badge status={i.status}>{i.status}</Badge></td>
                   <td>
                     <div className="flex gap-1 justify-end">
+                      <IconButton title="Download PDF" onClick={() => generateInvoicePDF(i)}><Download className="w-[15px] h-[15px]" /></IconButton>
                       <IconButton title="View"><Eye className="w-[15px] h-[15px]" /></IconButton>
                     </div>
                   </td>
