@@ -1,0 +1,6 @@
+{
+  "name": "KAI Property Legal Practice Management",
+  "description": "Law firm management system to track client cases, billing, and important court deadlines.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
