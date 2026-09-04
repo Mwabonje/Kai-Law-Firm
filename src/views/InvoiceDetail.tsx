@@ -29,7 +29,7 @@ export function InvoiceDetail({ invoice, onBack, generatePDF }: { invoice: any, 
 
 
   const handleSend = () => {
-    window.location.href = `mailto:wanjiru.njoroge@gmail.com?subject=Invoice ${invoice.no} from KAI Advocates LLP&body=Dear ${invoice.client},%0D%0A%0D%0APlease find your invoice ${invoice.no} attached.%0D%0A%0D%0AKind regards,%0D%0AKAI Advocates LLP`;
+    window.location.href = `mailto:{invoice.client.replace(/\s+/g, "").toLowerCase()}@email.com?subject=Invoice ${invoice.no} from KAI Advocates LLP&body=Dear ${invoice.client},%0D%0A%0D%0APlease find your invoice ${invoice.no} attached.%0D%0A%0D%0AKind regards,%0D%0AKAI Advocates LLP`;
     setIsSent(true);
     setTimeout(() => setIsSent(false), 3000);
   };
@@ -37,11 +37,22 @@ export function InvoiceDetail({ invoice, onBack, generatePDF }: { invoice: any, 
   // Using hardcoded data from the image to match exactly for the sample invoice,
   // but we can try to make it slightly dynamic.
   // The image shows specific line items for INV-3021. Let's just use static ones that match the image for the demo.
-  const lineItems = [
-    { desc: "Professional fees — conveyancing", sub: "Due diligence, drafting and negotiation of sale agreement", qty: 1, rate: "120,000", amount: "120,000" },
-    { desc: "Land Control Board consent application", sub: "Preparation and filing of consent application", qty: 1, rate: "25,000", amount: "25,000" },
-    { desc: "Disbursements", sub: "Search fees, valuation report, courier and filing costs", qty: 1, rate: "14,500", amount: "14,500" },
-  ];
+  const lineItems = invoice.lineItems || [];
+  
+  // Also get payments related to this invoice from DB
+  const payments = useLiveQuery(() => db.payments.where('invoice').equals(invoice.no).toArray()) || [];
+  const matters = useLiveQuery(() => db.matters.toArray()) || [];
+  const relatedMatter = matters.find(m => m.no === invoice.matter);
+
+  
+  const totalPaid = payments.reduce((sum, p) => {
+    const amt = parseFloat(p.amount.replace(/[^0-9.-]+/g,""));
+    return sum + (isNaN(amt) ? 0 : amt);
+  }, 0);
+  
+  const invTotal = parseFloat(invoice.amount.replace(/[^0-9.-]+/g,"")) || 0;
+  const balance = invTotal - totalPaid;
+
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -95,16 +106,16 @@ export function InvoiceDetail({ invoice, onBack, generatePDF }: { invoice: any, 
             <div>
               <div className="text-[10px] font-bold text-text-mute uppercase tracking-wider mb-2">Billed To</div>
               <div className="text-[13.5px] font-semibold text-ink">{invoice.client}</div>
-              <div className="text-[13px] text-text-soft mt-1">Nyali, Mombasa<br />wanjiru.njoroge@gmail.com</div>
+              <div className="text-[13px] text-text-soft mt-1"><br />{invoice.client.replace(/\s+/g, "").toLowerCase()}@email.com</div>
             </div>
             <div>
               <div className="text-[10px] font-bold text-text-mute uppercase tracking-wider mb-2">Matter</div>
               <div className="text-[13.5px] font-semibold text-ink">{invoice.matter}</div>
-              <div className="text-[13px] text-text-soft mt-1">Sale of Diani Beach Villa Plot</div>
+              <div className="text-[13px] text-text-soft mt-1">{relatedMatter ? relatedMatter.title : "Matter details"}</div>
             </div>
             <div>
               <div className="text-[10px] font-bold text-text-mute uppercase tracking-wider mb-2">Invoice Date</div>
-              <div className="text-[13.5px] font-semibold text-ink">27 Aug 2026</div>
+              <div className="text-[13.5px] font-semibold text-ink">{invoice.date || invoice.added || "Unknown Date"}</div>
               <div className="text-[13px] text-text-soft mt-1">Due {invoice.due}</div>
             </div>
           </div>
@@ -126,8 +137,8 @@ export function InvoiceDetail({ invoice, onBack, generatePDF }: { invoice: any, 
                     <div className="text-[12.5px] text-text-soft mt-0.5">{item.sub}</div>
                   </td>
                   <td className="py-4 text-right text-[13.5px] text-text-main align-top">{item.qty}</td>
-                  <td className="py-4 text-right text-[13.5px] text-text-main align-top">{item.rate}</td>
-                  <td className="py-4 text-right text-[13.5px] text-text-main align-top">{item.amount}</td>
+                  <td className="py-4 text-right text-[13.5px] text-text-main align-top">{typeof item.rate === "number" ? item.rate.toLocaleString() : item.rate}</td>
+                  <td className="py-4 text-right text-[13.5px] text-text-main align-top">{((item.qty || 1) * (parseFloat(item.rate) || 0)).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -137,15 +148,15 @@ export function InvoiceDetail({ invoice, onBack, generatePDF }: { invoice: any, 
             <div className="w-[300px]">
               <div className="flex justify-between py-2 text-[13.5px]">
                 <span className="text-text-soft">Subtotal</span>
-                <span className="font-semibold text-ink">KES 159,500</span>
+                <span className="font-semibold text-ink">KES {(invTotal / 1.16).toLocaleString(undefined, {maximumFractionDigits:0})}</span>
               </div>
               <div className="flex justify-between py-2 text-[13.5px] border-b border-border-sub mb-3 pb-3">
                 <span className="text-text-soft">VAT (16%)</span>
-                <span className="font-semibold text-ink">KES 25,520</span>
+                <span className="font-semibold text-ink">KES {(invTotal - (invTotal / 1.16)).toLocaleString(undefined, {maximumFractionDigits:0})}</span>
               </div>
               <div className="flex justify-between py-2 text-[15px] font-bold">
                 <span className="text-ink">Total Due</span>
-                <span className="text-ink">KES 185,020</span>
+                <span className="text-ink">{invoice.amount}</span>
               </div>
             </div>
           </div>
@@ -172,17 +183,17 @@ export function InvoiceDetail({ invoice, onBack, generatePDF }: { invoice: any, 
               
               <div>
                 <div className="text-[10px] font-bold text-text-mute uppercase tracking-wider mb-1.5">Total Amount</div>
-                <div className="text-[15px] font-semibold text-ink">KES 185,020</div>
+                <div className="text-[15px] font-semibold text-ink">{invoice.amount}</div>
               </div>
               
               <div>
                 <div className="text-[10px] font-bold text-text-mute uppercase tracking-wider mb-1.5">Paid to Date</div>
-                <div className="text-[15px] font-semibold text-ink">KES 60,000</div>
+                <div className="text-[15px] font-semibold text-ink">KES {totalPaid.toLocaleString()}</div>
               </div>
               
               <div>
                 <div className="text-[10px] font-bold text-text-mute uppercase tracking-wider mb-1.5">Balance</div>
-                <div className="text-[15px] font-semibold text-danger">KES 125,020</div>
+                <div className="text-[15px] font-semibold text-danger">KES {balance.toLocaleString()}</div>
               </div>
               
               <div>
@@ -196,14 +207,17 @@ export function InvoiceDetail({ invoice, onBack, generatePDF }: { invoice: any, 
             <div className="p-5 border-b border-border-sub">
               <h3 className="text-[14.5px] font-bold text-ink">Payment History</h3>
             </div>
-            <div className="p-5">
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="text-[13.5px] font-semibold text-ink">M-Pesa</div>
-                  <div className="text-[12px] text-text-soft mt-0.5">30 Aug 2026 · PMT-1128</div>
+            <div className="p-5 flex flex-col gap-4">
+              {payments.length === 0 && <div className="text-[13px] text-text-soft">No payments recorded.</div>}
+              {payments.map(p => (
+                <div key={p.id} className="flex justify-between items-center">
+                  <div>
+                    <div className="text-[13.5px] font-semibold text-ink">{p.method}</div>
+                    <div className="text-[12px] text-text-soft mt-0.5">{p.date} · {p.paymentId}</div>
+                  </div>
+                  <div className="text-[13.5px] font-bold text-success">{p.amount}</div>
                 </div>
-                <div className="text-[13.5px] font-bold text-success">KES 60,000</div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -214,7 +228,7 @@ export function InvoiceDetail({ invoice, onBack, generatePDF }: { invoice: any, 
             <div className="p-5">
               <div className="flex justify-between items-center">
                 <div>
-                  <div className="text-[13.5px] font-semibold text-ink">Sale of Diani Beach Villa Plot</div>
+                  <div className="text-[13.5px] font-semibold text-ink">Matter details</div>
                   <div className="text-[12px] text-text-soft mt-0.5">{invoice.matter} · Amina Mwangi</div>
                 </div>
                 <Badge status="In Progress">In Progress</Badge>
