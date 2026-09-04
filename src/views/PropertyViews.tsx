@@ -1,9 +1,12 @@
 import React from 'react';
 import { Button, Badge, IconButton, Pagination } from '../components/ui';
-import { properties, matters, documents } from '../data';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db';
 import { Plus, Search, Map, ChevronLeft, Edit2, FileText } from 'lucide-react';
 
 export function PropertiesView({ onNavigate }: { onNavigate: (view: string) => void }) {
+  const properties = useLiveQuery(() => db.properties.toArray()) || [];
+  const matters = useLiveQuery(() => db.matters.toArray()) || [];
   return (
     <div className="animate-in fade-in duration-300">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
@@ -88,6 +91,9 @@ export function PropertiesView({ onNavigate }: { onNavigate: (view: string) => v
 }
 
 export function PropertyDetailsView({ onNavigate }: { onNavigate: (view: string) => void }) {
+  const properties = useLiveQuery(() => db.properties.toArray()) || [];
+  const matters = useLiveQuery(() => db.matters.toArray()) || [];
+  const documents = useLiveQuery(() => db.documents.toArray()) || [];
   const propertyMatters = matters.filter(m => m.property === "Diani Beach Villa Plot");
   const propertyDocs = documents.filter(d => d.matter === "KAI-2026-0142"); // Assuming these are linked
 

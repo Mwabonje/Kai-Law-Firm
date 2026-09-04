@@ -1,14 +1,21 @@
 import { InvoiceDetail } from "./InvoiceDetail";
 import React from 'react';
 import { Button, Badge, IconButton, Pagination, getInitials, Modal } from '../components/ui';
-import { invoices, payments } from '../data';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db';
 import { Plus, Search, Eye, AlertCircle, Clock, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 export function InvoicesView() {
-  const [selectedInvoice, setSelectedInvoice] = React.useState<typeof invoices[0] | null>(null);
+  const clients = useLiveQuery(() => db.clients.toArray()) || [];
+  const matters = useLiveQuery(() => db.matters.toArray()) || [];
+  const invoices = useLiveQuery(() => db.invoices.toArray()) || [];
+  const [selectedInvoice, setSelectedInvoice] = React.useState<any | null>(null);
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
+  const [client, setClient] = React.useState('');
+  const [matter, setMatter] = React.useState('');
+  const [dueDate, setDueDate] = React.useState('');
   const [lineItems, setLineItems] = React.useState([
     { id: 1, desc: '', sub: '', qty: 1, rate: 0 }
   ]);
@@ -29,6 +36,21 @@ export function InvoicesView() {
   const vat = subtotal * 0.16;
   const total = subtotal + vat;
 
+  
+  const handleCreateInvoice = async () => {
+    if (!client || !matter || !total) return;
+    const newInvoice = {
+      no: "INV-" + Math.floor(4000 + Math.random() * 1000),
+      client,
+      matter,
+      amount: "KES " + total.toLocaleString(),
+      due: dueDate || "10 Sep 2026",
+      status: "Pending"
+    };
+    await db.invoices.add(newInvoice);
+    setIsCreateOpen(false);
+  };
+
   const overdueInvoices = invoices.filter(i => i.status === 'Overdue');
   const pendingInvoices = invoices.filter(i => i.status === 'Pending');
 
@@ -42,7 +64,7 @@ export function InvoicesView() {
     );
   }
 
-  const generateInvoicePDF = (invoice: typeof invoices[0]) => {
+  const generateInvoicePDF = (invoice: any) => {
     const doc = new jsPDF();
     
     // Firm Branding
@@ -221,24 +243,20 @@ export function InvoicesView() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-            <Button variant="primary" onClick={() => setIsCreateOpen(false)}>Create Invoice</Button>
+            <Button variant="primary" onClick={handleCreateInvoice}>Create Invoice</Button>
           </>
         }
       >
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Client</label>
-              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+            <div><label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Client</label><select value={client} onChange={e => setClient(e.target.value)} className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
                 <option>Select Client...</option>
                 <option>Wanjiru Njoroge</option>
                 <option>Tembo Properties Ltd</option>
                 <option>Coastal Sands Ltd</option>
               </select>
             </div>
-            <div>
-              <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Matter</label>
-              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+            <div><label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Matter</label><select value={matter} onChange={e => setMatter(e.target.value)} className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
                 <option>Select Matter...</option>
                 <option>KAI-2026-0142</option>
                 <option>KAI-2026-0139</option>
@@ -250,9 +268,7 @@ export function InvoicesView() {
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Invoice Date</label>
               <input type="date" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" />
             </div>
-            <div>
-              <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Due Date</label>
-              <input type="date" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" />
+            <div><label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Due Date</label><input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" />
             </div>
           </div>
 
@@ -333,6 +349,8 @@ export function InvoicesView() {
 }
 
 export function PaymentsView() {
+  const invoices = useLiveQuery(() => db.invoices.toArray()) || [];
+  const payments = useLiveQuery(() => db.payments.toArray()) || [];
   return (
     <div className="animate-in fade-in duration-300">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">

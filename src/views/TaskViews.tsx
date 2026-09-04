@@ -1,9 +1,12 @@
 import React from 'react';
 import { Button, Badge, PriorityBadge, Pagination } from '../components/ui';
-import { tasks, deadlines } from '../data';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db';
 import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function TasksView({ onNavigate }: { onNavigate: (view: string) => void }) {
+  const matters = useLiveQuery(() => db.matters.toArray()) || [];
+  const tasks = useLiveQuery(() => db.tasks.toArray()) || [];
   return (
     <div className="animate-in fade-in duration-300">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
@@ -82,6 +85,8 @@ export function TasksView({ onNavigate }: { onNavigate: (view: string) => void }
 }
 
 export function CalendarView() {
+  const tasks = useLiveQuery(() => db.tasks.toArray()) || [];
+  const deadlines = useLiveQuery(() => db.deadlines.toArray()) || [];
   const allDeadlines = deadlines.concat([
     {matter:"Sale — Old Town Heritage House", task:"Handover keys to buyer", date:"9 Sep 2026", overdue:false},
     {matter:"Lease Renewal — Likoni Warehouse Yard", task:"Client review meeting", date:"15 Sep 2026", overdue:false},

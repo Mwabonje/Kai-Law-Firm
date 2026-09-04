@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Badge, PriorityBadge, Pagination, Modal } from '../components/ui';
-import { matters, tasks, documents, invoices } from '../data';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db';
 import { Plus, Search, ChevronLeft } from 'lucide-react';
 
 export function MattersView({ onNavigate }: { onNavigate: (view: string) => void }) {
+  const matters = useLiveQuery(() => db.matters.toArray()) || [];
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   return (
@@ -156,6 +158,11 @@ export function MattersView({ onNavigate }: { onNavigate: (view: string) => void
 }
 
 export function MatterDetailsView({ onNavigate }: { onNavigate: (view: string) => void }) {
+  const matters = useLiveQuery(() => db.matters.toArray()) || [];
+  const tasks = useLiveQuery(() => db.tasks.toArray()) || [];
+  const documents = useLiveQuery(() => db.documents.toArray()) || [];
+  const invoices = useLiveQuery(() => db.invoices.toArray()) || [];
+  const activity = useLiveQuery(() => db.activity.toArray()) || [];
   const [activeTab, setActiveTab] = React.useState('overview');
 
   const matterTasks = tasks.filter(t => t.matter === "KAI-2026-0142");

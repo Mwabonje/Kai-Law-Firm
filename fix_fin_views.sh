@@ -1,0 +1,1 @@
+sed -i "s/import { invoices, payments } from '..\/data';/import { useLiveQuery } from 'dexie-react-hooks';\nimport { db } from '..\/db';\nimport { invoices as staticInvoices, payments as staticPayments } from '..\/data';/g" src/views/FinancialViews.tsx

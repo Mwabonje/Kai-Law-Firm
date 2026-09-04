@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { Button, Badge, getBadgeClass, Modal } from '../components/ui';
-import { deadlines, tasks, activity } from '../data';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db';
 import { Plus, FileText, Briefcase, Users, Map, CheckSquare } from 'lucide-react';
 
 export function DashboardView({ onNavigate }: { onNavigate: (view: string) => void }) {
+  const tasks = useLiveQuery(() => db.tasks.toArray()) || [];
+  const deadlines = useLiveQuery(() => db.deadlines.toArray()) || [];
+  const activity = useLiveQuery(() => db.activity.toArray()) || [];
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
   // Dynamic greeting and date in EAT (East Africa Time)

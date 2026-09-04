@@ -1,3 +1,5 @@
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db';
 import React, { useState } from 'react';
 import { Badge, Button, Modal } from '../components/ui';
 import { Download, Send, Plus, ChevronLeft, Check } from 'lucide-react';

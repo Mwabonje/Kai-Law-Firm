@@ -67,10 +67,10 @@ export const invoices: Invoice[] = [
 ];
 
 export const payments: Payment[] = [
-  {id:"PMT-1142", client:"Coastal Sands Ltd", invoice:"INV-3015", amount:"KES 96,500", method:"Bank Transfer", date:"19 Aug 2026", status:"Cleared"},
-  {id:"PMT-1139", client:"Sifa Estates Trust", invoice:"INV-3005", amount:"KES 150,000", method:"Cheque", date:"03 Aug 2026", status:"Cleared"},
-  {id:"PMT-1131", client:"Juma Bakari", invoice:"INV-2998", amount:"KES 62,000", method:"M-Pesa", date:"21 Jul 2026", status:"Cleared"},
-  {id:"PMT-1128", client:"Wanjiru Njoroge", invoice:"INV-3021", amount:"KES 60,000", method:"M-Pesa", date:"30 Aug 2026", status:"Partial"},
+  {paymentId:"PMT-1142", client:"Coastal Sands Ltd", invoice:"INV-3015", amount:"KES 96,500", method:"Bank Transfer", date:"19 Aug 2026", status:"Cleared"},
+  {paymentId:"PMT-1139", client:"Sifa Estates Trust", invoice:"INV-3005", amount:"KES 150,000", method:"Cheque", date:"03 Aug 2026", status:"Cleared"},
+  {paymentId:"PMT-1131", client:"Juma Bakari", invoice:"INV-2998", amount:"KES 62,000", method:"M-Pesa", date:"21 Jul 2026", status:"Cleared"},
+  {paymentId:"PMT-1128", client:"Wanjiru Njoroge", invoice:"INV-3021", amount:"KES 60,000", method:"M-Pesa", date:"30 Aug 2026", status:"Partial"},
 ];
 
 export const users: User[] = [

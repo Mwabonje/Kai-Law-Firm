@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Button, Badge, IconButton, Pagination, getInitials, Modal } from '../components/ui';
-import { clients, matters, properties, documents, invoices } from '../data';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db';
 import { Plus, Search, MoreHorizontal, Edit2, Phone, Mail, Calendar, ChevronLeft, Download, FileText } from 'lucide-react';
 
 export function ClientsView({ onNavigate }: { onNavigate: (view: string) => void }) {
+  const clients = useLiveQuery(() => db.clients.toArray()) || [];
+  const matters = useLiveQuery(() => db.matters.toArray()) || [];
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   return (
@@ -137,6 +140,12 @@ export function ClientsView({ onNavigate }: { onNavigate: (view: string) => void
 }
 
 export function ClientProfileView({ onNavigate }: { onNavigate: (view: string) => void }) {
+  const clients = useLiveQuery(() => db.clients.toArray()) || [];
+  const properties = useLiveQuery(() => db.properties.toArray()) || [];
+  const matters = useLiveQuery(() => db.matters.toArray()) || [];
+  const documents = useLiveQuery(() => db.documents.toArray()) || [];
+  const invoices = useLiveQuery(() => db.invoices.toArray()) || [];
+  const payments = useLiveQuery(() => db.payments.toArray()) || [];
   const [activeTab, setActiveTab] = React.useState('overview');
 
   const clientMatters = matters.filter(m => m.client === "Wanjiru Njoroge");
