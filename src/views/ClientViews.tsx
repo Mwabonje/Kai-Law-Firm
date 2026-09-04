@@ -7,7 +7,27 @@ import { Plus, Search, MoreHorizontal, Edit2, Phone, Mail, Calendar, ChevronLeft
 export function ClientsView({ onNavigate }: { onNavigate: (view: string) => void }) {
   const clients = useLiveQuery(() => db.clients.toArray()) || [];
   const matters = useLiveQuery(() => db.matters.toArray()) || [];
+  
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newClient, setNewClient] = useState({
+    type: 'Individual', name: '', phone: '', email: '', idNo: '', notes: ''
+  });
+
+  const handleAddClient = async () => {
+    if (!newClient.name) return;
+    await db.clients.add({
+      name: newClient.name,
+      status: 'Active',
+      type: newClient.type,
+      phone: newClient.phone,
+      email: newClient.email,
+      added: new Date().toLocaleDateString('en-GB'),
+      matters: 0
+    });
+    setNewClient({ type: 'Individual', name: '', phone: '', email: '', idNo: '', notes: '' });
+    setIsAddModalOpen(false);
+  };
+
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -98,14 +118,14 @@ export function ClientsView({ onNavigate }: { onNavigate: (view: string) => void
         footer={
           <>
             <Button variant="secondary" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
-            <Button variant="primary" onClick={() => setIsAddModalOpen(false)}>Add Client</Button>
+            <Button variant="primary" onClick={handleAddClient}>Add Client</Button>
           </>
         }
       >
         <div className="flex flex-col gap-4">
           <div>
             <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Client Type</label>
-            <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+            <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" value={newClient.type} onChange={e => setNewClient({...newClient, type: e.target.value})} style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
               <option>Individual</option>
               <option>Company</option>
               <option>Institution</option>
@@ -114,24 +134,24 @@ export function ClientsView({ onNavigate }: { onNavigate: (view: string) => void
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Full Name</label>
-              <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="e.g. Wanjiru Njoroge" />
+              <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="e.g. Wanjiru Njoroge" value={newClient.name} onChange={e => setNewClient({...newClient, name: e.target.value})} />
             </div>
             <div>
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Phone Number</label>
-              <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="+254 7…" />
+              <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="+254 7…" value={newClient.phone} onChange={e => setNewClient({...newClient, phone: e.target.value})} />
             </div>
           </div>
           <div>
             <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Email Address</label>
-            <input type="email" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="name@email.com" />
+            <input type="email" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="name@email.com" value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} />
           </div>
           <div>
             <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">ID / Passport / Registration No.</label>
-            <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="e.g. 22841076" />
+            <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="e.g. 22841076" value={newClient.idNo} onChange={e => setNewClient({...newClient, idNo: e.target.value})} />
           </div>
           <div>
             <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Notes</label>
-            <textarea className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft min-h-[84px] resize-y" placeholder="Optional internal notes…"></textarea>
+            <textarea className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft min-h-[84px] resize-y" placeholder="Optional internal notes…" value={newClient.notes} onChange={e => setNewClient({...newClient, notes: e.target.value})}></textarea>
           </div>
         </div>
       </Modal>

@@ -1,10 +1,28 @@
-import React from 'react';
-import { Button, Badge, PriorityBadge, Pagination } from '../components/ui';
+import React, { useState } from 'react';
+import { Button, Badge, PriorityBadge, Pagination, Modal } from '../components/ui';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function TasksView({ onNavigate }: { onNavigate: (view: string) => void }) {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newTask, setNewTask] = useState({ name: '', matter: '', assignee: '', due: '' });
+
+  const handleAddTask = async () => {
+    if (!newTask.name) return;
+    await db.tasks.add({
+      name: newTask.name,
+      matter: newTask.matter || 'General',
+      assignee: newTask.assignee || 'Unassigned',
+      due: newTask.due || 'No Date',
+      priority: 'Medium',
+      status: 'To Do',
+      overdue: false
+    });
+    setNewTask({ name: '', matter: '', assignee: '', due: '' });
+    setIsAddModalOpen(false);
+  };
+
   const matters = useLiveQuery(() => db.matters.toArray()) || [];
   const tasks = useLiveQuery(() => db.tasks.toArray()) || [];
   return (
@@ -15,7 +33,7 @@ export function TasksView({ onNavigate }: { onNavigate: (view: string) => void }
           <p className="text-[13.5px] text-text-soft mt-1.5 max-w-[560px]">Everything the team needs to action, across all matters.</p>
         </div>
         <div className="flex shrink-0 w-full sm:w-auto">
-          <Button variant="primary" className="flex-1 sm:flex-none justify-center">
+          <Button variant="primary" className="flex-1 sm:flex-none justify-center" onClick={() => setIsAddModalOpen(true)}>
             <Plus className="w-[15px] h-[15px]" />
             Add Task
           </Button>
@@ -80,9 +98,41 @@ export function TasksView({ onNavigate }: { onNavigate: (view: string) => void }
         </div>
         <Pagination total={23} label="Showing 1–8 of 23" />
       </div>
+
+      <Modal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)}
+        title="Add Task"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
+            <Button variant="primary" onClick={handleAddTask}>Add Task</Button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Task Description</label>
+            <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="e.g. Draft contract" value={newTask.name} onChange={e => setNewTask({...newTask, name: e.target.value})} />
+          </div>
+          <div>
+            <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Related Matter</label>
+            <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="Select matter..." value={newTask.matter} onChange={e => setNewTask({...newTask, matter: e.target.value})} />
+          </div>
+          <div>
+            <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Assignee</label>
+            <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="e.g. Amina Mwangi" value={newTask.assignee} onChange={e => setNewTask({...newTask, assignee: e.target.value})} />
+          </div>
+          <div>
+            <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Due Date</label>
+            <input type="date" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" value={newTask.due} onChange={e => setNewTask({...newTask, due: e.target.value})} />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
+
 
 export function CalendarView() {
   const tasks = useLiveQuery(() => db.tasks.toArray()) || [];

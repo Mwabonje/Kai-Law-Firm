@@ -6,7 +6,28 @@ import { Plus, Search, ChevronLeft } from 'lucide-react';
 
 export function MattersView({ onNavigate }: { onNavigate: (view: string) => void }) {
   const matters = useLiveQuery(() => db.matters.toArray()) || [];
+  
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newMatter, setNewMatter] = useState({
+    title: '', client: '', property: '', type: 'Conveyancing', assignee: 'Amina Mwangi', priority: 'Medium', opened: '', description: ''
+  });
+
+  const handleAddMatter = async () => {
+    if (!newMatter.title) return;
+    await db.matters.add({
+      no: "KAI-" + new Date().getFullYear() + "-" + Math.floor(1000 + Math.random() * 9000),
+      title: newMatter.title,
+      client: newMatter.client || 'Unknown',
+      property: newMatter.property || 'N/A',
+      lawyer: newMatter.assignee,
+      status: 'Active',
+      priority: newMatter.priority as any,
+      opened: newMatter.opened || new Date().toLocaleDateString('en-GB')
+    });
+    setNewMatter({ title: '', client: '', property: '', type: 'Conveyancing', assignee: 'Amina Mwangi', priority: 'Medium', opened: '', description: '' });
+    setIsAddModalOpen(false);
+  };
+
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -94,29 +115,29 @@ export function MattersView({ onNavigate }: { onNavigate: (view: string) => void
         footer={
           <>
             <Button variant="secondary" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
-            <Button variant="primary" onClick={() => setIsAddModalOpen(false)}>Create Matter</Button>
+            <Button variant="primary" onClick={handleAddMatter}>Create Matter</Button>
           </>
         }
       >
         <div className="flex flex-col gap-4">
           <div>
             <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Matter Title</label>
-            <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="e.g. Sale of Diani Beach Villa Plot" />
+            <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="e.g. Sale of Diani Beach Villa Plot" value={newMatter.title} onChange={e => setNewMatter({...newMatter, title: e.target.value})} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Client</label>
-              <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="Select client…" />
+              <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="Select client…" value={newMatter.client} onChange={e => setNewMatter({...newMatter, client: e.target.value})} />
             </div>
             <div>
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Related Property</label>
-              <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="Select property…" />
+              <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="Select property…" value={newMatter.property} onChange={e => setNewMatter({...newMatter, property: e.target.value})} />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Matter Type</label>
-              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }} value={newMatter.type} onChange={e => setNewMatter({...newMatter, type: e.target.value})}>
                 <option>Conveyancing</option>
                 <option>Sale & Purchase</option>
                 <option>Lease Agreement</option>
@@ -126,7 +147,7 @@ export function MattersView({ onNavigate }: { onNavigate: (view: string) => void
             </div>
             <div>
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Assigned Lawyer</label>
-              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }} value={newMatter.assignee} onChange={e => setNewMatter({...newMatter, assignee: e.target.value})}>
                 <option>Amina Mwangi</option>
                 <option>David Otieno</option>
                 <option>Fatuma Ali</option>
@@ -136,7 +157,7 @@ export function MattersView({ onNavigate }: { onNavigate: (view: string) => void
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Priority</label>
-              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }} value={newMatter.priority} onChange={e => setNewMatter({...newMatter, priority: e.target.value})}>
                 <option>Medium</option>
                 <option>High</option>
                 <option>Low</option>
@@ -144,12 +165,12 @@ export function MattersView({ onNavigate }: { onNavigate: (view: string) => void
             </div>
             <div>
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Date Opened</label>
-              <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="dd/mm/yyyy" />
+              <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="dd/mm/yyyy" value={newMatter.opened} onChange={e => setNewMatter({...newMatter, opened: e.target.value})} />
             </div>
           </div>
           <div>
             <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Description</label>
-            <textarea className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft min-h-[84px] resize-y" placeholder="Brief scope of the matter…"></textarea>
+            <textarea className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft min-h-[84px] resize-y" placeholder="Brief scope of the matter…" value={newMatter.description} onChange={e => setNewMatter({...newMatter, description: e.target.value})}></textarea>
           </div>
         </div>
       </Modal>

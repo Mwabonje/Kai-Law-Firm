@@ -8,7 +8,28 @@ export function DashboardView({ onNavigate }: { onNavigate: (view: string) => vo
   const tasks = useLiveQuery(() => db.tasks.toArray()) || [];
   const deadlines = useLiveQuery(() => db.deadlines.toArray()) || [];
   const activity = useLiveQuery(() => db.activity.toArray()) || [];
+  
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [newCase, setNewCase] = useState({
+    title: '', client: '', type: 'Corporate Law', assignee: 'Amina Mwangi', priority: 'Medium', notes: ''
+  });
+
+  const handleQuickAdd = async () => {
+    if (!newCase.title) return;
+    await db.matters.add({
+      no: "KAI-" + new Date().getFullYear() + "-" + Math.floor(1000 + Math.random() * 9000),
+      title: newCase.title,
+      client: newCase.client || 'Unknown',
+      property: 'N/A',
+      lawyer: newCase.assignee,
+      status: 'Active',
+      priority: newCase.priority as any,
+      opened: new Date().toLocaleDateString('en-GB')
+    });
+    setNewCase({ title: '', client: '', type: 'Corporate Law', assignee: 'Amina Mwangi', priority: 'Medium', notes: '' });
+    setIsQuickAddOpen(false);
+  };
+
 
   // Dynamic greeting and date in EAT (East Africa Time)
   const now = new Date();
@@ -158,23 +179,23 @@ export function DashboardView({ onNavigate }: { onNavigate: (view: string) => vo
         footer={
           <>
             <Button variant="secondary" onClick={() => setIsQuickAddOpen(false)}>Cancel</Button>
-            <Button variant="primary" onClick={() => setIsQuickAddOpen(false)}>Create Case</Button>
+            <Button variant="primary" onClick={handleQuickAdd}>Create Case</Button>
           </>
         }
       >
         <div className="flex flex-col gap-4">
           <div>
             <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Case Title</label>
-            <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="e.g. Acme Corp Merger" />
+            <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="e.g. Acme Corp Merger" value={newCase.title} onChange={e => setNewCase({...newCase, title: e.target.value})} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Client</label>
-              <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="Select client…" />
+              <input type="text" className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft" placeholder="Select client…" value={newCase.client} onChange={e => setNewCase({...newCase, client: e.target.value})} />
             </div>
             <div>
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Practice Area</label>
-              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }} value={newCase.type} onChange={e => setNewCase({...newCase, type: e.target.value})}>
                 <option>Corporate Law</option>
                 <option>Civil Litigation</option>
                 <option>Criminal Defense</option>
@@ -186,7 +207,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (view: string) => vo
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Assigned Attorney</label>
-              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }} value={newCase.assignee} onChange={e => setNewCase({...newCase, assignee: e.target.value})}>
                 <option>Robert Sterling, JD</option>
                 <option>Amina Mwangi</option>
                 <option>David Otieno</option>
@@ -195,7 +216,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (view: string) => vo
             </div>
             <div>
               <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Priority</label>
-              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}>
+              <select className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft appearance-none cursor-pointer" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2363636B' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }} value={newCase.priority} onChange={e => setNewCase({...newCase, priority: e.target.value})}>
                 <option>Normal</option>
                 <option>High</option>
                 <option>Urgent</option>
@@ -204,7 +225,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (view: string) => vo
           </div>
           <div>
             <label className="block text-[12.5px] font-semibold text-text-main mb-1.5">Initial Notes</label>
-            <textarea className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft min-h-[84px] resize-y" placeholder="Brief scope of the case…"></textarea>
+            <textarea className="w-full border border-border-main rounded-md px-3 py-[9px] text-[13.5px] text-text-main bg-surface outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent-soft min-h-[84px] resize-y" placeholder="Brief scope of the case…" value={newCase.notes} onChange={e => setNewCase({...newCase, notes: e.target.value})}></textarea>
           </div>
         </div>
       </Modal>
